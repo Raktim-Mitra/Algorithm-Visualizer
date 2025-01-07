@@ -1,101 +1,169 @@
-import Image from "next/image";
+"use client";
+import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    const [array, setArray] = useState([]);
+    const [sorting, setSorting] = useState(false);
+    const [selectedSort, setSelectedSort] = useState("bubble");
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    useEffect(() => {
+        generateRandomArray();
+    }, []);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    const generateRandomArray = () => {
+        const randomArray = Array.from(
+            { length: 20 },
+            () => Math.floor(Math.random() * 50) + 1
+        );
+        setArray(randomArray);
+    };
+    const bubbleSort = async () => {
+        setSorting(true);
+        const arr = [...array];
+        for (let i = 0; i < arr.length - 1; i++) {
+            for (let j = 0; j < arr.length - i - 1; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    // Swap elements
+                    [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                    setArray([...arr]);
+                    await sleep(100);
+                }
+            }
+        }
+        setSorting(false);
+    };
+    const selectionSort = async () => {
+        setSorting(true);
+        const arr = [...array];
+        for (let i = 0; i < arr.length; i++) {
+            let minIdx = i;
+            for (let j = i + 1; j < arr.length; j++) {
+                if (arr[j] < arr[minIdx]) {
+                    minIdx = j;
+                }
+            }
+            if (minIdx !== i) {
+                [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+                setArray([...arr]);
+                await sleep(100);
+            }
+        }
+        setSorting(false);
+    };
+
+    const insertionSort = async () => {
+        setSorting(true);
+        const arr = [...array];
+        for (let i = 1; i < arr.length; i++) {
+            let key = arr[i];
+            let j = i - 1;
+            while (j >= 0 && arr[j] > key) {
+                arr[j + 1] = arr[j];
+                j--;
+                setArray([...arr]);
+                await sleep(100);
+            }
+            arr[j + 1] = key;
+            setArray([...arr]);
+            await sleep(100);
+        }
+        setSorting(false);
+    };
+    const handleSort = async () => {
+        setSorting(true);
+        switch (selectedSort) {
+            case "bubble":
+                await bubbleSort();
+                break;
+            case "selection":
+                await selectionSort();
+                break;
+            case "insertion":
+                await insertionSort();
+                break;
+            default:
+                break;
+        }
+        setSorting(false);
+    };
+    const resetArray = () => {
+        generateRandomArray();
+    };
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 w-full">
+            <h1 className="text-4xl font-bold text-white mb-8">
+                Sorting Visualizer
+            </h1>
+            <div className="flex space-x-4 mb-6 items-center">
+                <Select
+                    onValueChange={(value) => setSelectedSort(value)}
+                    defaultValue="bubble"
+                >
+                    <SelectTrigger className="bg-white text-black px-4 py-2 rounded">
+                        <SelectValue placeholder="Select a sort" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white text-black">
+                        <SelectGroup>
+                            <SelectLabel>Sort Algorithm</SelectLabel>
+                            <SelectItem
+                                value="bubble"
+                                className=" focus:bg-slate-500"
+                            >
+                                Bubble Sort
+                            </SelectItem>
+                            <SelectItem
+                                value="selection"
+                                className=" focus:bg-slate-500"
+                            >
+                                Selection Sort
+                            </SelectItem>
+                            <SelectItem
+                                value="insertion"
+                                className=" focus:bg-slate-500"
+                            >
+                                Insertion Sort
+                            </SelectItem>
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+                <Button
+                    onClick={handleSort}
+                    disabled={sorting}
+                    className="bg-blue-500 text-white"
+                >
+                    {sorting ? "Sorting..." : "Start Sorting"}
+                </Button>
+                <Button
+                    onClick={resetArray}
+                    disabled={sorting}
+                    className="bg-red-500 text-white"
+                >
+                    Reset
+                </Button>
+            </div>
+            <div className="flex items-end space-x-2 w-screen justify-center">
+                {array.map((value, index) => (
+                    <div
+                        key={index}
+                        className="bg-green-500"
+                        style={{
+                            height: `${value * 10}px`,
+                            width: "36px",
+                            transition: "all 0.3s ease",
+                        }}
+                    ></div>
+                ))}
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
