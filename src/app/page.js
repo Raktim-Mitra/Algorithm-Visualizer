@@ -27,6 +27,7 @@ export default function Home() {
         );
         setArray(randomArray);
     };
+    
     const bubbleSort = async () => {
         setSorting(true);
         const arr = [...array];
@@ -79,6 +80,97 @@ export default function Home() {
         }
         setSorting(false);
     };
+    const mergeSortArray = async () => {
+        const arr = [...array];
+      
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      
+        const merge = async (arr, l, m, r) => {
+          const n1 = m - l + 1;
+          const n2 = r - m;
+          const L = new Array(n1);
+          const R = new Array(n2);
+      
+          for (let i = 0; i < n1; i++) L[i] = arr[l + i];
+          for (let j = 0; j < n2; j++) R[j] = arr[m + 1 + j];
+      
+          let i = 0,
+            j = 0,
+            k = l;
+      
+          while (i < n1 && j < n2) {
+            if (L[i] <= R[j]) {
+              arr[k] = L[i];
+              i++;
+            } else {
+              arr[k] = R[j];
+              j++;
+            }
+            k++;
+            setArray([...arr]); // Update state for visualization
+            await sleep(300); // Delay for visualization
+          }
+      
+          while (i < n1) {
+            arr[k] = L[i];
+            i++;
+            k++;
+            setArray([...arr]);
+            await sleep(300);
+          }
+      
+          while (j < n2) {
+            arr[k] = R[j];
+            j++;
+            k++;
+            setArray([...arr]);
+            await sleep(300);
+          }
+        };
+      
+        const mergeSort = async (arr, l, r) => {
+          if (l >= r) return;
+          const m = l + Math.floor((r - l) / 2);
+          await mergeSort(arr, l, m);
+          await mergeSort(arr, m + 1, r);
+          await merge(arr, l, m, r); // Await merge to ensure visualization
+        };
+      
+        await mergeSort(arr, 0, arr.length - 1);
+      };
+    const quickSortArray = async () => {
+        const arr = [...array];
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        const partition = async (arr, low, high) => {
+            const pivot = arr[high];
+            let i = low - 1;
+            for (let j = low; j < high; j++) {
+                if (arr[j] < pivot) {
+                    i++;
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                    setArray([...arr]);
+                    await sleep(100);
+                }
+            }
+            [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+            setArray([...arr]);
+            await sleep(100);
+            return i + 1;
+        };
+
+        const quickSort = async (arr, low, high) => {
+            if (low < high) {
+                const pi = await partition(arr, low, high);
+                await quickSort(arr, low, pi - 1);
+                await quickSort(arr, pi + 1, high);
+            }
+        }
+
+        await quickSort(arr, 0, arr.length - 1);
+    };
+        
+      
     const handleSort = async () => {
         setSorting(true);
         switch (selectedSort) {
@@ -91,6 +183,12 @@ export default function Home() {
             case "insertion":
                 await insertionSort();
                 break;
+            case "merge":
+                await mergeSortArray();
+                break;    
+            case "quick":
+                await quickSortArray();
+                break;    
             default:
                 break;
         }
@@ -132,6 +230,18 @@ export default function Home() {
                                 className=" focus:bg-slate-500"
                             >
                                 Insertion Sort
+                            </SelectItem>
+                            <SelectItem
+                                value="merge"
+                                className=" focus:bg-slate-500"
+                            >
+                                Merge Sort
+                            </SelectItem>
+                            <SelectItem
+                                value="quick"
+                                className=" focus:bg-slate-500"
+                            >
+                                Quick Sort
                             </SelectItem>
                         </SelectGroup>
                     </SelectContent>
